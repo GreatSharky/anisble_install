@@ -1,0 +1,29 @@
+---
+# roles/base/defaults/main.yml
+
+base_packages:
+  - networkmanager
+  - vim
+  - bash-completion
+  - htop
+  - git
+  - openssh
+  - wget
+  - curl
+  - man-db
+  - man-pages
+  - less
+  - unzip
+  - zip
+  - find
+  - where
+  - reflector
+  - snapper
+  - snap-pac
+  - btrfs-progs
+
+# Username to grant sudo/wheel access. Override in host_vars per machine.
+base_admin_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+
+# Snapper limits — number of snapshots kept before cleanup thins them out.
+base_snapper_number_limit: 20

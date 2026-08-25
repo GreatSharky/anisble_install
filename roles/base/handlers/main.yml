@@ -1,0 +1,13 @@
+---
+# roles/base/handlers/main.yml
+
+- name: Restart NetworkManager
+  ansible.builtin.systemd:
+    name: NetworkManager
+    state: restarted
+
+- name: Mark reflector as run
+  ansible.builtin.file:
+    path: /etc/pacman.d/mirrorlist.reflector-stamp
+    state: touch
+    mode: "0644"

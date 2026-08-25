@@ -1,0 +1,82 @@
+---
+# roles/base/tasks/snapper.yml
+#
+# snapper + snap-pac packages are installed in packages.yml already.
+# This handles the fiddly part: snapper's `create-config` wants to
+# create /.snapshots itself as a fresh btrfs subvolume, but we already
+# have one (the @snapshots subvolume created at install time and
+# mounted via fstab). We adopt it rather than letting snapper create
+# a second, unmounted one.
+#
+# All tasks below are guarded so re-running this role on an
+# already-configured machine is a safe no-op.
+
+- name: Check whether snapper root config already exists
+  ansible.builtin.stat:
+    path: /etc/snapper/configs/root
+  register: base_snapper_root_config
+
+- name: Adopt existing @snapshots subvolume into snapper config
+  when: not snapper_root_config.stat.exists
+  block:
+    - name: Unmount the pre-existing @snapshots subvolume
+      ansible.posix.mount:
+        path: /.snapshots
+        state: unmounted
+
+    - name: Remove the now-empty /.snapshots mountpoint directory
+      ansible.builtin.file:
+        path: /.snapshots
+        state: absent
+
+    - name: Create snapper config for root
+      ansible.builtin.command:
+        cmd: snapper -c root create-config /
+      # This recreates /.snapshots as a NEW subvolume owned by snapper,
+      # which we deliberately discard in the next task in favour of
+      # our own pre-existing @snapshots subvolume.
+
+    - name: Delete the subvolume snapper just created
+      ansible.builtin.command:
+        cmd: btrfs subvolume delete /.snapshots
+
+    - name: Recreate /.snapshots as a plain mountpoint directory
+      ansible.builtin.file:
+        path: /.snapshots
+        state: directory
+        mode: "0750"
+        owner: root
+        group: root
+
+    - name: Remount all filesystems from fstab (brings @snapshots back)
+      ansible.builtin.command:
+        cmd: mount -a
+
+    - name: Ensure /.snapshots ownership/permissions match snapper's expectations
+      ansible.builtin.file:
+        path: /.snapshots
+        state: directory
+        mode: "0750"
+        owner: root
+        group: root
+
+- name: Set snapshot number limit
+  ansible.builtin.command:
+    cmd: >
+      snapper -c root set-config
+      NUMBER_LIMIT={{ base_snapper_number_limit }}
+      NUMBER_LIMIT_IMPORTANT={{ base_snapper_number_limit }}
+  register: base_snapper_set_config
+  changed_when: true
+  # snapper set-config has no built-in "already set" check reflected
+  # in exit status, so this is treated as always-changed but is cheap
+  # and idempotent in effect (just rewrites the same values).
+
+- name: Enable snapper timeline and cleanup timers
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - snapper-timeline.timer
+    - snapper-cleanup.timer

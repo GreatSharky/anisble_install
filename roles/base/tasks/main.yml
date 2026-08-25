@@ -1,0 +1,54 @@
+---
+# Order matters: packages must exist before sudoers/networking/snapper
+# tasks try to use the binaries/services those packages provide.
+
+- name: Install base packages
+  block:
+    - name: Update pacman package cache
+      community.general.pacman:
+        update_cache: true
+    - name: Install base packages
+      community.general.pacman:
+        name: "{{ base_packages }}"
+        state: present
+
+    - name: Set up reflector for mirror ranking (run once, then timer handles updates)
+      ansible.builtin.command:
+        cmd: >
+          reflector --country Finland --latest 10 --sort rate
+          --save /etc/pacman.d/mirrorlist
+      args:
+        creates: /etc/pacman.d/mirrorlist.reflector-stamp
+      notify:
+        - Mark reflector as run
+
+- name: Configure sudo/wheel access
+  block:
+    - name: Ensure admin user is in the wheel group
+      ansible.builtin.user:
+        name: "{{ base_admin_user }}"
+        groups: wheel
+        append: true
+
+    - name: Grant wheel group sudo access via sudoers.d
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/wheel
+        content: "%wheel ALL=(ALL:ALL) ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+        validate: "visudo -cf %s"
+      # validate runs visudo's syntax check against the temp file before
+      # it's moved into place — prevents a bad file from ever landing and
+      # locking sudo out.
+
+- name: Configure networking
+  block:
+    - name: Enable and start NetworkManager
+      ansible.builtin.systemd:
+        name: NetworkManager
+        enabled: true
+        state: started
+
+- name: Configure snapper + snap-pac
+  ansible.builtin.import_tasks: snapper.yml
