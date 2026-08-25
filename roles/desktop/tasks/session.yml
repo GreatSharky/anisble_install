@@ -1,0 +1,22 @@
+---
+# roles/desktop/tasks/session.yml
+#
+# greetd owns getting from boot to a running Hyprland session. It
+# installs as a systemd service and manages the VT itself — no need
+# to separately disable getty@tty1, greetd's unit conflicts with it
+# automatically via its own systemd unit file.
+
+- name: Deploy greetd config
+  ansible.builtin.template:
+    src: greetd-config.toml.j2
+    dest: /etc/greetd/config.toml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart greetd
+
+- name: Enable greetd service
+  ansible.builtin.systemd:
+    name: greetd
+    enabled: true
+    state: started

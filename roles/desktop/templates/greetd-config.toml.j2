@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# roles/desktop/templates/greetd-config.toml.j2
+
+[terminal]
+vt = 1
+
+[default_session]
+command = "{{ desktop_greetd_command }}"
+user = "{{ desktop_greetd_user }}"

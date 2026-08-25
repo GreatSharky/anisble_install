@@ -1,0 +1,7 @@
+---
+# roles/desktop/handlers/main.yml
+
+- name: Restart greetd
+  ansible.builtin.systemd:
+    name: greetd
+    state: restarted

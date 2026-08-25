@@ -1,0 +1,16 @@
+---
+# roles/desktop/tasks/main.yml
+
+- name: Install desktop packages
+  block:
+    - name: Update pacman cache
+      community.general.pacman:
+        update_cache: true
+
+    - name: Install desktop packages
+      community.general.pacman:
+        name: "{{ desktop_packages }}"
+        state: present
+
+- name: Configure login/session (greetd)
+  ansible.builtin.import_tasks: session.yml

@@ -1,0 +1,24 @@
+---
+desktop_hyprland_packages:
+  - hyprland
+  - polkit
+  - hyprpolkitagent
+  - dunst
+  - pipewire
+  - wireplumber
+  - hyprpaper
+  - hypridle
+  - hyprlock
+  - hyprshutdown
+  - hyprcursor
+  - hyprutils
+  - qt5-wayland
+  - qt6-wayland
+  - xdg-desktop-portal-hyprland
+  - wl-clipboard
+  - slurp
+  - swappy
+  - hyprlauncher
+  - cliphist
+  - nautilus
+  - udiskie
