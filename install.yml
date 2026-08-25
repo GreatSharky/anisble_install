@@ -1,0 +1,49 @@
+---
+# install.yml
+#
+# Prerequisite: ansible-core itself must already be installed via pacman
+# before this playbook can run (chicken-and-egg — Ansible can't install
+# itself). Do that manually first:
+#
+#   sudo pacman -S ansible python-pip
+#
+# Run with:
+#   ansible-playbook install.yml --ask-become-pass
+#
+# (--connection=local is set in inventory, see note at bottom)
+
+- name: Provision this machine for Arch
+  hosts: localhost
+  connection: local
+  become: true
+
+  pre_tasks:
+    - name: Install/upgrade the community.general collection
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install community.general ansible.posix --force
+      register: collection_install
+      changed_when: "'up to date' not in collection_install.stdout"
+      tags: [always]
+
+    - name: Ensure pacman package cache is reasonably fresh
+      community.general.pacman:
+        update_cache: true
+      tags: [always]
+
+    - name: Install ansible-lint and pip (via pacman)
+      community.general.pacman:
+        name:
+          - python-pip
+          - ansible-lint
+        state: present
+      tags: [always]
+
+  roles:
+    - role: base
+      tags: [base]
+    - role: desktop
+      tags: [desktop]
+    - role: coding
+      tags: [coding]
+    - role: gaming
+      tags: [gaming]
