@@ -1,0 +1,15 @@
+---
+# roles/base/defaults/dotfiles.yml
+#
+# base_dotfiles_repo falls back to the shared dotfiles_repo (set in
+# group_vars/all.yml) unless this role's own var is overridden — either
+# here, or per-host in host_vars/<host>.yml as `base_dotfiles_repo: ...`.
+
+base_dotfiles_repo: "{{ dotfiles_repo }}"
+
+base_dotfile_repos:
+  - repo: "{{ base_dotfiles_repo }}"
+    version: "{{ dotfile_branch }}"
+    links:
+      - src: bash/bashrc
+        dest: "{{ ansible_env.HOME }}/.bashrc"

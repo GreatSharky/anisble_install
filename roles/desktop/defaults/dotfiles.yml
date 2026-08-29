@@ -1,0 +1,20 @@
+---
+# desktop_dotfiles_repo falls back to the shared dotfiles_repo (set in
+# group_vars/all.yml) unless this role's own var is overridden — either
+# here, or per-host in host_vars/<host>.yml as `desktop_dotfiles_repo: ...`.
+
+desktop_dotfiles_repo: "{{ dotfiles_repo }}"
+
+desktop_dotfile_repos:
+  - repo: "{{ desktop_dotfiles_repo }}"
+    clone_path: "{{ ansible_env.HOME }}/dotfiles"
+    version: "{{ dotfile_branch }}"
+    links:
+      - src: hypr
+        dest: "{{ ansible_env.HOME }}/.config/hypr"
+  - repo: "{{ desktop_dotfiles_repo }}"
+    clone_path: "{{ ansible_env.HOME }}/dotfiles"
+    version: "{{ dotfile_branch }}"
+    links:
+      - src: waybar
+        dest: "{{ ansible_env.HOME }}/.config/waybar"

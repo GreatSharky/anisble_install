@@ -1,0 +1,65 @@
+---
+# roles/dofiler/tasks/main.yml
+#
+# Reusable dotfile clone+symlink logic, included from other roles via
+# include_role with a role-specific `dofiler_repos` list passed as a var.
+# Pass an empty list (or omit the var, defaults/main.yml covers that) to
+# skip dotfile handling entirely for a role that doesn't need any.
+#
+# Structure of dofiler_repos — one entry per repo, each with its own
+# list of things to link out of it:
+#
+#   dofiler_repos:
+#     - repo: git@github.com:yourname/dotfiles.git
+#       version: "{{ dotfile_branch }}"      # branch/tag/commit, e.g. per-host
+#       clone_path: "{{ ansible_env.HOME }}/.dotfiles/main"   # optional
+#       links:
+#         - src: bashrc                       # path relative to repo root
+#           dest: "{{ ansible_env.HOME }}/.bashrc"
+#         - src: hypr
+#           dest: "{{ ansible_env.HOME }}/.config/hypr"
+#
+# Only paths you list under `links` get symlinked — anything else in
+# the repo is cloned to disk but never linked into place.
+
+- name: Report skipped dotfile linking
+  ansible.builtin.debug:
+    msg: "No dofiler_repos provided for this role — skipping dotfile linking."
+  when: dofiler_repos | length == 0
+
+- name: Ensure parent directories exist for link destinations
+  ansible.builtin.file:
+    path: "{{ item.1.dest | dirname }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ dofiler_repos | subelements('links') }}"
+  loop_control:
+    label: "{{ item.1.dest | dirname }}"
+  when: dofiler_repos | length > 0
+
+- name: Clone dotfile repositories (one clone per repo, not per link)
+  ansible.builtin.git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.clone_path | default(ansible_env.HOME + '/.dotfiles/' + (item.repo | basename | regex_replace('\\.git$', ''))) }}"
+    version: "{{ item.version | default('main') }}"
+    update: true
+    accept_hostkey: true
+  loop: "{{ dofiler_repos }}"
+  loop_control:
+    label: "{{ item.repo }} ({{ item.version | default('main') }})"
+  when: dofiler_repos | length > 0
+
+- name: Symlink selected paths out of each cloned repo
+  ansible.builtin.file:
+    src: >-
+      {{
+        (item.0.clone_path | default(ansible_env.HOME + '/.dotfiles/' + (item.0.repo | basename | regex_replace('\.git$', ''))))
+        + (('/' + item.1.src) if item.1.src is defined else '')
+      }}
+    dest: "{{ item.1.dest }}"
+    state: link
+    force: true
+  loop: "{{ dofiler_repos | subelements('links') }}"
+  loop_control:
+    label: "{{ item.1.dest }}"
+  when: dofiler_repos | length > 0

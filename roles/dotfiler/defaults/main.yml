@@ -1,0 +1,9 @@
+---
+# roles/dotfile_link/defaults/main.yml
+#
+# Default to an empty list so a role that includes dotfile_link without
+# passing dotfiler_repos (or passes an explicitly empty list) just skips
+# cleanly, rather than needing a separate "does this role have dotfiles"
+# branch wherever it's included from.
+
+dotfiler_repos: []

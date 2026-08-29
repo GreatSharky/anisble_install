@@ -12,6 +12,7 @@ desktop_hyprland_packages:
   - hyprshutdown
   - hyprcursor
   - hyprutils
+  - waybar
   - qt5-wayland
   - qt6-wayland
   - xdg-desktop-portal-hyprland
@@ -22,3 +23,10 @@ desktop_hyprland_packages:
   - cliphist
   - nautilus
   - udiskie
+
+desktop_fonts:
+  - noto-fonts
+
+desktop_greetd_packages:
+  - greetd
+  - greetd-tuigreet

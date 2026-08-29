@@ -1,4 +1,3 @@
----
 # install.yml
 #
 # Prerequisite: ansible-core itself must already be installed via pacman
