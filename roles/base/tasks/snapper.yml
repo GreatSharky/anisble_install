@@ -17,7 +17,7 @@
   register: base_snapper_root_config
 
 - name: Adopt existing @snapshots subvolume into snapper config
-  when: not snapper_root_config.stat.exists
+  when: not base_snapper_root_config.stat.exists
   block:
     - name: Unmount the pre-existing @snapshots subvolume
       ansible.posix.mount:

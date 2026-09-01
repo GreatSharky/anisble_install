@@ -17,11 +17,18 @@
   become: true
 
   pre_tasks:
-    - name: Install/upgrade the community.general collection
+    - name: Ensure community.general collection is installed
       ansible.builtin.command:
-        cmd: ansible-galaxy collection install community.general ansible.posix --force
-      register: collection_install
-      changed_when: "'up to date' not in collection_install.stdout"
+        cmd: ansible-galaxy collection install community.general -p /usr/share/ansible/collections
+      args:
+        creates: /usr/share/ansible/collections/ansible_collections/community/general
+      tags: [always]
+
+    - name: Ensure ansible.posix collection is installed
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install ansible.posix -p /usr/share/ansible/collections
+      args:
+        creates: /usr/share/ansible/collections/ansible_collections/ansible/posix
       tags: [always]
 
     - name: Ensure pacman package cache is reasonably fresh

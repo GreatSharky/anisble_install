@@ -15,8 +15,6 @@ base_packages:
   - less
   - unzip
   - zip
-  - find
-  - where
   - reflector
   - snapper
   - snap-pac

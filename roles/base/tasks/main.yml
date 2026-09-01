@@ -2,25 +2,23 @@
 # Order matters: packages must exist before sudoers/networking/snapper
 # tasks try to use the binaries/services those packages provide.
 
+- name: Update pacman package cache
+  community.general.pacman:
+    update_cache: true
 - name: Install base packages
-  block:
-    - name: Update pacman package cache
-      community.general.pacman:
-        update_cache: true
-    - name: Install base packages
-      community.general.pacman:
-        name: "{{ base_packages }}"
-        state: present
+  community.general.pacman:
+    name: "{{ base_packages }}"
+    state: present
 
-    - name: Set up reflector for mirror ranking (run once, then timer handles updates)
-      ansible.builtin.command:
-        cmd: >
-          reflector --country Finland --latest 10 --sort rate
-          --save /etc/pacman.d/mirrorlist
-      args:
-        creates: /etc/pacman.d/mirrorlist.reflector-stamp
-      notify:
-        - Mark reflector as run
+- name: Set up reflector for mirror ranking (run once, then timer handles updates)
+  ansible.builtin.command:
+    cmd: >
+      reflector --country Finland --latest 10 --sort rate
+      --save /etc/pacman.d/mirrorlist
+  args:
+    creates: /etc/pacman.d/mirrorlist.reflector-stamp
+  notify:
+    - Mark reflector as run
 
 - name: Configure sudo/wheel access
   block:
