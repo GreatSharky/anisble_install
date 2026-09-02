@@ -72,6 +72,24 @@
   # in exit status, so this is treated as always-changed but is cheap
   # and idempotent in effect (just rewrites the same values).
 
+- name: Check wether snapper home config exists
+  ansible.builtin.stat:
+    path: /etc/snapper/configs/home
+  register: base_snapper_home_config
+
+- name: Create snapper config for /home
+  ansible.builtin.command:
+    cmd: snapper -c home create-config /home
+  when: not base_snapper_home_config.stat.exists
+
+- name: Set snapshot number limit for home
+  ansible.builtin.command:
+    cmd: >
+      snapper -c home set-config
+      NUMBER_LIMIT="{{ base_snapper_home_number_limit }}"
+      NUMBER_LIMIT_IMPORTANT="{{ base_snapper_home_number_limit}}"
+  changed_when: true
+
 - name: Enable snapper timeline and cleanup timers
   ansible.builtin.systemd:
     name: "{{ item }}"
@@ -80,3 +98,10 @@
   loop:
     - snapper-timeline.timer
     - snapper-cleanup.timer
+
+- name: Ensure root and home is autmatically updated
+  ansible.builtin.lineinfile:
+    path: /etc/conf.d/snapper
+    regexp: "^SNAPPER_CONFIGS="
+    line: 'SNAPPER_CONFIGS="root home"'
+

@@ -25,3 +25,5 @@ base_admin_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
 
 # Snapper limits — number of snapshots kept before cleanup thins them out.
 base_snapper_number_limit: 20
+base_snapper_home_number_limit: 8
+
