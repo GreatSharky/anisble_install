@@ -34,7 +34,7 @@ desktop_fonts:
 
 desktop_greetd_packages:
   - greetd
-  - greetd-tuigreet
+  - greetd-regreet
   - cage
 
 desktop_greetd_command: "cage -s -- regreet"
