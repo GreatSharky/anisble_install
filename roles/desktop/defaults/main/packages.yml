@@ -1,0 +1,12 @@
+---
+
+desktop_user_packages:
+  - ghostty
+  - spotify-launcher
+  - telegram-desktop
+  - obsidian
+  - chromium
+  - nautilus
+
+desktop_packages: "{{ desktop_hyprland_packages + desktop_user_packages }}"
+

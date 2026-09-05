@@ -6,6 +6,12 @@
 # to separately disable getty@tty1, greetd's unit conflicts with it
 # automatically via its own systemd unit file.
 
+- name: Create greeted directory
+  ansible.builtin.file:
+    path: /etc/greetd
+    state: directory
+    mode: '755'
+
 - name: Deploy greetd config
   ansible.builtin.template:
     src: greetd-config.toml.j2
@@ -13,10 +19,11 @@
     owner: root
     group: root
     mode: "0644"
-  notify: restart greetd
 
 - name: Enable greetd service
   ansible.builtin.systemd:
     name: greetd
     enabled: true
     state: started
+  notify: Restart greetd
+

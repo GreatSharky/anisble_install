@@ -1,10 +1,14 @@
 ---
-desktop_hyprland_packages:
+desktop_hyprland_packages: "{{ desktop_hypr_packages + desktop_fonts + desktop_greetd_packages }}"
+
+desktop_hypr_packages:
   - hyprland
   - polkit
   - hyprpolkitagent
   - dunst
   - pipewire
+  - pipewire-pulse
+  - pipewire-alsa
   - wireplumber
   - hyprpaper
   - hypridle
@@ -12,7 +16,6 @@ desktop_hyprland_packages:
   - hyprshutdown
   - hyprcursor
   - hyprutils
-  - waybar
   - qt5-wayland
   - qt6-wayland
   - xdg-desktop-portal-hyprland
@@ -21,12 +24,19 @@ desktop_hyprland_packages:
   - swappy
   - hyprlauncher
   - cliphist
-  - nautilus
   - udiskie
+  - waybar
 
 desktop_fonts:
   - noto-fonts
+  - noto-fonts-emoji
+  - ttf-jetbrains-mono-nerd
 
 desktop_greetd_packages:
   - greetd
   - greetd-tuigreet
+  - cage
+
+desktop_greetd_command: "cage -s -- regreet"
+desktop_greetd_user: "greeter"
+

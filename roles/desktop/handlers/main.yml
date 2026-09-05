@@ -5,3 +5,4 @@
   ansible.builtin.systemd:
     name: greetd
     state: restarted
+
