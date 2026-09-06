@@ -1,0 +1,12 @@
+---
+
+coding_nvim_packages:
+  - neovim
+  - git
+  - make
+  - unzip
+  - gcc
+  - ripgrep
+  - fd
+  - tree-sitter-cli
+  

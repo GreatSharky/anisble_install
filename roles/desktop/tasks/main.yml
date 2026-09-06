@@ -12,5 +12,11 @@
         name: "{{ desktop_packages }}"
         state: present
 
+- name: Create home directories
+  ansible.builtin.file:
+    path: "home/{{ ansible_env.user}}/{Downloads,Documents,Images,Projects}"
+    state: directory
+    mode: "755"
+
 - name: Configure login/session (greetd)
   ansible.builtin.import_tasks: session.yml
