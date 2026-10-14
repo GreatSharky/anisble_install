@@ -14,9 +14,16 @@
 
 - name: Create home directories
   ansible.builtin.file:
-    path: "home/{{ ansible_env.user}}/{Downloads,Documents,Images,Projects}"
+    path: "{{ admin_home }}/{{ item }}"
     state: directory
-    mode: "755"
+    group: "{{ admin_user }}"
+    owner: "{{ admin_user }}"
+    mode: "0755"
+  loop:
+    - Downloads
+    - Documents
+    - Images
+    - Projects
 
 - name: Configure login/session (greetd)
   ansible.builtin.import_tasks: session.yml

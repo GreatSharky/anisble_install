@@ -21,7 +21,7 @@ base_packages:
   - btrfs-progs
 
 # Username to grant sudo/wheel access. Override in host_vars per machine.
-base_admin_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+base_admin_user: "{{ admin_user }}"
 
 # Snapper limits — number of snapshots kept before cleanup thins them out.
 base_snapper_number_limit: 20

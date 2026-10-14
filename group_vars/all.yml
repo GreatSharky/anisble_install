@@ -1,0 +1,2 @@
+admin_user: aaro
+admin_home: "/home/{{ admin_user }}"

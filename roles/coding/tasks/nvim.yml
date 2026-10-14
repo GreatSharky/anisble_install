@@ -5,6 +5,3 @@
     name: "{{coding_nvim_packages}}"
     state: present
 
-- name: Install tree-sitter
-  block:
-    - name: Install cargo

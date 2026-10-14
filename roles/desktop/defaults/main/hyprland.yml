@@ -26,6 +26,7 @@ desktop_hypr_packages:
   - cliphist
   - udiskie
   - waybar
+  - brightnessctl
 
 desktop_fonts:
   - noto-fonts
