@@ -1,65 +1,42 @@
 ---
-# roles/dofiler/tasks/main.yml
+# roles/dotfiler/tasks/main.yml
 #
 # Reusable dotfile clone+symlink logic, included from other roles via
-# include_role with a role-specific `dofiler_repos` list passed as a var.
+# include_role with a role-specific `dotfiler_repos` list passed as a var.
 # Pass an empty list (or omit the var, defaults/main.yml covers that) to
 # skip dotfile handling entirely for a role that doesn't need any.
 #
-# Structure of dofiler_repos — one entry per repo, each with its own
-# list of things to link out of it:
+# Each repo holds one subdirectory per program (git/, hypr/, ghostty/,
+# bash/, ...). A subdirectory is linked as a whole to
+# <dotfiler_config_dir>/<name> (~/.config/<name>), so most configs are
+# just a name. Configs that don't live in ~/.config are a dict with
+# explicit links; `src` is relative to the config's subdirectory:
 #
-#   dofiler_repos:
+#   dotfiler_repos:
 #     - repo: git@github.com:yourname/dotfiles.git
-#       version: "{{ dotfile_branch }}"      # branch/tag/commit, e.g. per-host
-#       clone_path: "{{ ansible_env.HOME }}/.dotfiles/main"   # optional
-#       links:
-#         - src: bashrc                       # path relative to repo root
-#           dest: "{{ ansible_env.HOME }}/.bashrc"
-#         - src: hypr
-#           dest: "{{ ansible_env.HOME }}/.config/hypr"
+#       version: "{{ dotfile_branch }}"      # branch/tag/commit, default main
+#       clone_path: "{{ dotfiler_home }}/dotfiles"   # optional
+#       configs:
+#         - hypr                             # -> ~/.config/hypr
+#         - ghostty                          # -> ~/.config/ghostty
+#         - name: bash
+#           links:
+#             - src: bashrc
+#               dest: "{{ dotfiler_home }}/.bashrc"
+#             - src: bash_profile
+#               dest: "{{ dotfiler_home }}/.bash_profile"
 #
-# Only paths you list under `links` get symlinked — anything else in
-# the repo is cloned to disk but never linked into place.
+# Only configs you list get symlinked — anything else in the repo is
+# cloned to disk but never linked into place.
 
 - name: Report skipped dotfile linking
   ansible.builtin.debug:
-    msg: "No dofiler_repos provided for this role — skipping dotfile linking."
-  when: dofiler_repos | length == 0
+    msg: "No dotfiler_repos provided for this role — skipping dotfile linking."
+  when: dotfiler_repos | length == 0
 
-- name: Ensure parent directories exist for link destinations
-  ansible.builtin.file:
-    path: "{{ item.1.dest | dirname }}"
-    state: directory
-    mode: "0755"
-  loop: "{{ dofiler_repos | subelements('links') }}"
+- name: Clone and link each dotfiler repo
+  ansible.builtin.include_tasks: repo.yml
+  loop: "{{ dotfiler_repos }}"
   loop_control:
-    label: "{{ item.1.dest | dirname }}"
-  when: dofiler_repos | length > 0
-
-- name: Clone dotfile repositories (one clone per repo, not per link)
-  ansible.builtin.git:
-    repo: "{{ item.repo }}"
-    dest: "{{ item.clone_path | default(ansible_env.HOME + '/.dotfiles/' + (item.repo | basename | regex_replace('\\.git$', ''))) }}"
-    version: "{{ item.version | default('main') }}"
-    update: true
-    accept_hostkey: true
-  loop: "{{ dofiler_repos }}"
-  loop_control:
-    label: "{{ item.repo }} ({{ item.version | default('main') }})"
-  when: dofiler_repos | length > 0
-
-- name: Symlink selected paths out of each cloned repo
-  ansible.builtin.file:
-    src: >-
-      {{
-        (item.0.clone_path | default(ansible_env.HOME + '/.dotfiles/' + (item.0.repo | basename | regex_replace('\.git$', ''))))
-        + (('/' + item.1.src) if item.1.src is defined else '')
-      }}
-    dest: "{{ item.1.dest }}"
-    state: link
-    force: true
-  loop: "{{ dofiler_repos | subelements('links') }}"
-  loop_control:
-    label: "{{ item.1.dest }}"
-  when: dofiler_repos | length > 0
+    loop_var: dotfiler_repo
+    label: "{{ dotfiler_repo.repo }}"

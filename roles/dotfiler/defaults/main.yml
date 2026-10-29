@@ -1,9 +1,20 @@
 ---
-# roles/dotfile_link/defaults/main.yml
+# roles/dotfiler/defaults/main.yml
 #
-# Default to an empty list so a role that includes dotfile_link without
+# Default to an empty list so a role that includes dotfiler without
 # passing dotfiler_repos (or passes an explicitly empty list) just skips
 # cleanly, rather than needing a separate "does this role have dotfiles"
 # branch wherever it's included from.
 
 dotfiler_repos: []
+
+# Account the dotfiles belong to. Tasks run as this user so clones and
+# links are not owned by root when the play runs with become: true.
+dotfiler_user: "{{ admin_user }}"
+dotfiler_home: "{{ admin_home }}"
+
+# Where plain (string) configs are linked to: <dotfiler_config_dir>/<name>
+dotfiler_config_dir: "{{ dotfiler_home }}/.config"
+
+# Parent of the default clone location for repos without a clone_path.
+dotfiler_clone_base: "{{ dotfiler_home }}/.dotfiles"

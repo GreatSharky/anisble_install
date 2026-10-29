@@ -7,14 +7,8 @@ desktop_dotfiles_repo: "{{ dotfiles_repo }}"
 
 desktop_dotfile_repos:
   - repo: "{{ desktop_dotfiles_repo }}"
-    clone_path: "{{ ansible_env.HOME }}/dotfiles"
+    clone_path: "{{ dotfiles_clone_path }}"
     version: "{{ dotfile_branch }}"
-    links:
-      - src: hypr
-        dest: "{{ ansible_env.HOME }}/.config/hypr"
-  - repo: "{{ desktop_dotfiles_repo }}"
-    clone_path: "{{ ansible_env.HOME }}/dotfiles"
-    version: "{{ dotfile_branch }}"
-    links:
-      - src: waybar
-        dest: "{{ ansible_env.HOME }}/.config/waybar"
+    configs:
+      - hypr
+      - waybar

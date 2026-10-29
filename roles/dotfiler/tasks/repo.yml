@@ -1,0 +1,58 @@
+---
+# roles/dotfiler/tasks/repo.yml
+#
+# Handles one entry of dotfiler_repos (passed in as `dotfiler_repo`).
+# The clone path is resolved once here and reused by every task below.
+
+- name: Resolve clone path
+  ansible.builtin.set_fact:
+    dotfiler_clone_dir: >-
+      {{ dotfiler_repo.clone_path
+         | default(dotfiler_clone_base ~ '/' ~ (dotfiler_repo.repo | basename | regex_replace('\.git$', ''))) }}
+
+- name: Clone dotfile repository
+  ansible.builtin.git:
+    repo: "{{ dotfiler_repo.repo }}"
+    dest: "{{ dotfiler_clone_dir }}"
+    version: "{{ dotfiler_repo.version | default('main') }}"
+    update: true
+    accept_hostkey: true
+  become_user: "{{ dotfiler_user }}"
+
+- name: Ensure the config directory exists
+  ansible.builtin.file:
+    path: "{{ dotfiler_config_dir }}"
+    state: directory
+    mode: "0755"
+  become_user: "{{ dotfiler_user }}"
+  when: dotfiler_repo.configs | select('string') | list | length > 0
+
+- name: Ensure parent directories of explicit links exist
+  ansible.builtin.file:
+    path: "{{ item.1.dest | dirname }}"
+    state: directory
+    mode: "0755"
+  become_user: "{{ dotfiler_user }}"
+  loop: "{{ dotfiler_repo.configs | select('mapping') | subelements('links') }}"
+  loop_control:
+    label: "{{ item.1.dest | dirname }}"
+
+- name: Link plain configs into the config directory
+  ansible.builtin.file:
+    src: "{{ dotfiler_clone_dir }}/{{ item }}"
+    dest: "{{ dotfiler_config_dir }}/{{ item }}"
+    state: link
+    force: true
+  become_user: "{{ dotfiler_user }}"
+  loop: "{{ dotfiler_repo.configs | select('string') | list }}"
+
+- name: Link configs with explicit destinations
+  ansible.builtin.file:
+    src: "{{ dotfiler_clone_dir }}/{{ item.0.name }}/{{ item.1.src }}"
+    dest: "{{ item.1.dest }}"
+    state: link
+    force: true
+  become_user: "{{ dotfiler_user }}"
+  loop: "{{ dotfiler_repo.configs | select('mapping') | subelements('links') }}"
+  loop_control:
+    label: "{{ item.1.dest }}"

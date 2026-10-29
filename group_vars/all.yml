@@ -1,2 +1,5 @@
 admin_user: aaro
 admin_home: "/home/{{ admin_user }}"
+
+# Shared clone location so every role's dotfiler run reuses one checkout.
+dotfiles_clone_path: "{{ admin_home }}/Projects/dotfiles"

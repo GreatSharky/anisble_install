@@ -9,7 +9,13 @@ base_dotfiles_repo: "{{ dotfiles_repo }}"
 
 base_dotfile_repos:
   - repo: "{{ base_dotfiles_repo }}"
+    clone_path: "{{ dotfiles_clone_path }}"
     version: "{{ dotfile_branch }}"
-    links:
-      - src: bash/bashrc
-        dest: "{{ ansible_env.HOME }}/.bashrc"
+    configs:
+      - git
+      - name: bash
+        links:
+          - src: bashrc
+            dest: "{{ admin_home }}/.bashrc"
+          - src: bash_profile
+            dest: "{{ admin_home }}/.bash_profile"

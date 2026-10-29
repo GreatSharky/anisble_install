@@ -27,3 +27,9 @@
 
 - name: Configure login/session (greetd)
   ansible.builtin.import_tasks: session.yml
+
+- name: Link desktop dotfiles
+  ansible.builtin.include_role:
+    name: dotfiler
+  vars:
+    dotfiler_repos: "{{ desktop_dotfile_repos }}"

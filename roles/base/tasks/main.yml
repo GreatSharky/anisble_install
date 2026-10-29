@@ -50,3 +50,9 @@
 
 - name: Configure snapper + snap-pac
   ansible.builtin.import_tasks: snapper.yml
+
+- name: Link base dotfiles
+  ansible.builtin.include_role:
+    name: dotfiler
+  vars:
+    dotfiler_repos: "{{ base_dotfile_repos }}"
